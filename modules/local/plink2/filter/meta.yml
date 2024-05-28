@@ -1,0 +1,35 @@
+name: plink2_filter
+description: Filter data in plinks2
+keywords:
+  - plink2
+input:
+  - meta:
+      type: map
+      description: sample information
+  - bedfile:
+      type: file
+      description: PLINK 2 binary genotype table (bed)
+      pattern: "*.{bed}"
+  - bim:
+      type: file
+      description: PLINK extended MAP file
+      pattern: "*.{bim}"
+  - fam:
+      type: file
+      description: PLINK sample information file
+      pattern: "*.{fam}"
+output:
+  - bed:
+      type: file
+      description: PLINK binary biallelic genotype table file
+      pattern: "*.{bed}"
+  - bim:
+      type: file
+      description: PLINK extended MAP file
+      pattern: "*.{bim}"
+  - fam:
+      type: file
+      description: PLINK sample information file
+      pattern: "*.{fam}"
+authors:
+  - "@RuthEberhardt"
