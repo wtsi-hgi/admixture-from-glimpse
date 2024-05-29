@@ -4,6 +4,9 @@ include { BCFTOOLS_ISEC } from '../modules/nf-core/bcftools/isec/main.nf'
 include { BCFTOOLS_MERGE_FROM_ISEC } from '../modules/local/bcftools/merge_from_isec/main.nf'
 include { BCFTOOLS_INDEX as INDEX_MERGE } from '../modules/nf-core/bcftools/index/main.nf'
 include { PLINK2_VCF } from '../modules/local/plink2/vcf/main.nf'
+include { PLINK2_FILTER as PLINK2_MAF_FILTER } from '../modules/local/plink2/filter/main.nf'
+include { PLINK2_FILTER as PLINK2_VAR_FILTER } from '../modules/local/plink2/filter/main.nf'
+include { PLINK2_FILTER as PLINK2_SAMPLE_FILTER } from '../modules/local/plink2/filter/main.nf'
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     // step 1 - filter test data by minimum info score
@@ -32,9 +35,25 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
  
     BCFTOOLS_MERGE_FROM_ISEC(BCFTOOLS_ISEC.out.results)
 
-
     plink_vcf_input_ch = BCFTOOLS_MERGE_FROM_ISEC.out.merged_variants.map{ meta, vcf, index -> [[id: 'plink_from_vcf'], vcf, index]}
     PLINK2_VCF(plink_vcf_input_ch)
-    PLINK2_VCF.out.bim.view()
+
+
+    filter_input_ch1 = PLINK2_VCF.out.bed.join(PLINK2_VCF.out.bim).join(PLINK2_VCF.out.fam).map{
+        meta, bed, bim, fam -> [[id:'maf_filter', prefix_in:'plink_from_vcf', prefix_out:'plink_maf_filtered'], bed, bim, fam]
+    }
+    PLINK2_MAF_FILTER(filter_input_ch1)
     
+    filter_input_ch2 = PLINK2_MAF_FILTER.out.bed.join(PLINK2_MAF_FILTER.out.bim).join(PLINK2_MAF_FILTER.out.fam).map{
+        meta, bed, bim, fam -> [[id:'var_filter', prefix_in:'plink_maf_filtered', prefix_out:'plink_var_filtered'], bed, bim, fam]
+    }
+    PLINK2_VAR_FILTER(filter_input_ch2)
+
+    filter_input_ch3 = PLINK2_VAR_FILTER.out.bed.join(PLINK2_VAR_FILTER.out.bim).join(PLINK2_VAR_FILTER.out.fam).map{
+        meta, bed, bim, fam -> [[id:'sample_filter', prefix_in:'plink_var_filtered', prefix_out:'plink_sample_filtered'], bed, bim, fam]
+    }
+    PLINK2_SAMPLE_FILTER(filter_input_ch3)
+    PLINK2_SAMPLE_FILTER.out.bed.view()
+    
+
 }
