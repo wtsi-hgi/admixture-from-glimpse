@@ -1,0 +1,40 @@
+name: plink2_het
+description: Inbreeding data in plinks2
+keywords:
+  - plink2
+input:
+  - meta:
+      type: map
+      description: sample information
+  - bed:
+      type: file
+      description: PLINK 2 binary genotype table (bed)
+      pattern: "*.{bed}"
+  - bim:
+      type: file
+      description: PLINK extended MAP file
+      pattern: "*.{bim}"
+  - fam:
+      type: file
+      description: PLINK sample information file
+      pattern: "*.{fam}"
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - het:
+      type: file
+      description: 
+      pattern: "*.{het}"
+  - log:
+      type: file
+      description: 
+      pattern: "*.{log}"
+  - nosex:
+      type: file
+      description: 
+      pattern: "*.{nosex}"
+authors:
+  - @RuthEberhardt

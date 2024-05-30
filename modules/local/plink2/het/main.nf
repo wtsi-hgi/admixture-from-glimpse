@@ -1,4 +1,4 @@
-process PLINK2_FILTER {
+process PLINK2_HET {
     tag "$meta.id"
     label 'process_low'
 
@@ -11,12 +11,7 @@ input:
     tuple val(meta), path(bed), path(bim), path(fam)
 
 output:
-    tuple val(meta), path("*.bim")  , emit: bim, optional: true
-    tuple val(meta), path("*.bed")  , emit: bed, optional: true
-    tuple val(meta), path("*.fam")  , emit: fam, optional: true
-    tuple val(meta), path("*.pgen") , emit: pgen, optional: true
-    tuple val(meta), path("*.psam") , emit: psam, optional: true
-    tuple val(meta), path("*.pvar") , emit: pvar, optional: true
+    tuple val(meta), path("*.het")  , emit: het
     path "versions.yml"             , emit: versions
 
 script: 
@@ -26,6 +21,7 @@ script:
         --bfile ${meta.prefix_in} \\
         $args \\
         --threads $task.cpus \\
+        --het \\
         --out ${meta.prefix_out}
 
     cat <<-END_VERSIONS > versions.yml

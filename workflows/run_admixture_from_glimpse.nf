@@ -7,6 +7,8 @@ include { PLINK2_VCF } from '../modules/local/plink2/vcf/main.nf'
 include { PLINK2_FILTER as PLINK2_MAF_FILTER } from '../modules/local/plink2/filter/main.nf'
 include { PLINK2_FILTER as PLINK2_VAR_FILTER } from '../modules/local/plink2/filter/main.nf'
 include { PLINK2_FILTER as PLINK2_SAMPLE_FILTER } from '../modules/local/plink2/filter/main.nf'
+include { PLINK2_HET } from '../modules/local/plink2/het/main.nf'
+
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     // step 1 - filter test data by minimum info score
@@ -53,7 +55,11 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
         meta, bed, bim, fam -> [[id:'sample_filter', prefix_in:'plink_var_filtered', prefix_out:'plink_sample_filtered'], bed, bim, fam]
     }
     PLINK2_SAMPLE_FILTER(filter_input_ch3)
-    PLINK2_SAMPLE_FILTER.out.bed.view()
-    
+
+    het_input_ch = PLINK2_SAMPLE_FILTER.out.bed.join(PLINK2_SAMPLE_FILTER.out.bim).join(PLINK2_SAMPLE_FILTER.out.fam).map{
+        meta, bed, bim, fam -> [[id:'inbreeding', prefix_in:'plink_sample_filtered', prefix_out:'plink_het'], bed, bim, fam]
+    }
+    PLINK2_HET(het_input_ch)
+    PLINK2_HET.out.het.view()
 
 }

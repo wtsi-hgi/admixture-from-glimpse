@@ -34,15 +34,15 @@ output:
         e.g. [ id:'test', single_end:false ]
   -  fam:
       type: file
-      description: PLINK 2 sample information file
+      description: PLINK sample information file
       pattern: "*.{fam}"
   -  bim:
       type: file
-      description: PLINK 2 extended map file
+      description: PLINK extended map file
       pattern: "*.{bim}"
   -  bed:
       type: file
-      description: PLINK 2 binary allelic genotype table
+      description: PLINK binary allelic genotype table
       pattern: "*.{bed}"
   - pgen:
       type: file
