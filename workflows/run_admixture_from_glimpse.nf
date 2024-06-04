@@ -8,6 +8,7 @@ include { PLINK2_FILTER as PLINK2_MAF_FILTER } from '../modules/local/plink2/fil
 include { PLINK2_FILTER as PLINK2_VAR_FILTER } from '../modules/local/plink2/filter/main.nf'
 include { PLINK2_FILTER as PLINK2_SAMPLE_FILTER } from '../modules/local/plink2/filter/main.nf'
 include { PLINK2_HET } from '../modules/local/plink2/het/main.nf'
+include { IDENTIFY_HET_OUTLIERS } from '../modules/local/identify_het_outliers/main.nf'
 
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
@@ -61,5 +62,7 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     }
     PLINK2_HET(het_input_ch)
     PLINK2_HET.out.het.view()
+
+    IDENTIFY_HET_OUTLIERS(PLINK2_HET.out.het)
 
 }
