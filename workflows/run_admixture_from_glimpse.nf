@@ -9,6 +9,7 @@ include { PLINK2_FILTER as PLINK2_VAR_FILTER } from '../modules/local/plink2/fil
 include { PLINK2_FILTER as PLINK2_SAMPLE_FILTER } from '../modules/local/plink2/filter/main.nf'
 include { PLINK2_HET } from '../modules/local/plink2/het/main.nf'
 include { IDENTIFY_HET_OUTLIERS } from '../modules/local/identify_het_outliers/main.nf'
+include { PLINK2_REMOVE } from '../modules/local/plink2/remove/main.nf'
 
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
@@ -61,8 +62,16 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
         meta, bed, bim, fam -> [[id:'inbreeding', prefix_in:'plink_sample_filtered', prefix_out:'plink_het'], bed, bim, fam]
     }
     PLINK2_HET(het_input_ch)
-    PLINK2_HET.out.het.view()
 
     IDENTIFY_HET_OUTLIERS(PLINK2_HET.out.het)
+
+    remove_input_ch = het_input_ch.map{ meta, bed, bim, fam -> [[id:'remove_samples', prefix_in:'plink_sample_filtered', prefix_out:'het_outliers_removed'], bed, bim, fam]}
+
+    //IDENTIFY_HET_OUTLIERS.out.samples_to_exclude.view()
+    //remove_input_ch.view()
+
+    PLINK2_REMOVE(remove_input_ch, IDENTIFY_HET_OUTLIERS.out.samples_to_exclude)
+
+    PLINK2_REMOVE.out.samples_excluded.view()
 
 }

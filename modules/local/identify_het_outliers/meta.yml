@@ -1,0 +1,22 @@
+name: identify_het_outliers
+description: Identify outliers on heterozygosity
+keywords:
+  - heterozygosity
+input:
+  - meta:
+      type: map
+      description: sample information
+  - infile:
+      type: file
+      description: input het file from plink2 --het
+output:
+  - meta:
+      type: map
+      description: sample information
+  - outfile:
+      type: file
+      description: file containing outlier sample ids
+      pattern: "samples_to_exclude.txt"
+authors:
+  - @RuthEberhardt
+

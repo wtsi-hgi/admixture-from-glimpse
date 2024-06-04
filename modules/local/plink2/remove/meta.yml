@@ -1,0 +1,46 @@
+name: plink2_remove
+description: Remove samples from a plink2 dataset
+keywords:
+  - plink2
+input:
+  - meta:
+      type: map
+      description: sample information
+  - bed:
+      type: file
+      description: PLINK 2 binary genotype table (bed)
+      pattern: "*.{bed}"
+  - bim:
+      type: file
+      description: PLINK extended MAP file
+      pattern: "*.{bim}"
+  - fam:
+      type: file
+      description: PLINK sample information file
+      pattern: "*.{fam}"
+  - meta2:
+      type: map
+      description: sample inforamtion
+  - sample_exclude_list:
+      type: path
+      description: samples to exclude
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  -  fam:
+      type: file
+      description: PLINK sample information file
+      pattern: "*.{fam}"
+  -  bim:
+      type: file
+      description: PLINK extended map file
+      pattern: "*.{bim}"
+  -  bed:
+      type: file
+      description: PLINK binary allelic genotype table
+      pattern: "*.{bed}"
+authors:
+  - @RuthEberhardt
