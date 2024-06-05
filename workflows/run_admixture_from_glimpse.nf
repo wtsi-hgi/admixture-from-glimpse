@@ -10,7 +10,8 @@ include { PLINK2_FILTER as PLINK2_SAMPLE_FILTER } from '../modules/local/plink2/
 include { PLINK2_HET } from '../modules/local/plink2/het/main.nf'
 include { IDENTIFY_HET_OUTLIERS } from '../modules/local/identify_het_outliers/main.nf'
 include { PLINK2_REMOVE } from '../modules/local/plink2/remove/main.nf'
-
+include { PLINK2_FILTER as PLINK2_HWE_FILTER } from '../modules/local/plink2/filter/main.nf'
+include { PLINK2_INDEP_PAIRWISE } from '../modules/local/plink2/indep_pairwise/main.nf'
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     // step 1 - filter test data by minimum info score
@@ -66,12 +67,21 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     IDENTIFY_HET_OUTLIERS(PLINK2_HET.out.het)
 
     remove_input_ch = het_input_ch.map{ meta, bed, bim, fam -> [[id:'remove_samples', prefix_in:'plink_sample_filtered', prefix_out:'het_outliers_removed'], bed, bim, fam]}
-
-    //IDENTIFY_HET_OUTLIERS.out.samples_to_exclude.view()
-    //remove_input_ch.view()
-
     PLINK2_REMOVE(remove_input_ch, IDENTIFY_HET_OUTLIERS.out.samples_to_exclude)
 
-    PLINK2_REMOVE.out.samples_excluded.view()
+    plink_hwe_input_ch = PLINK2_REMOVE.out.bed.join(PLINK2_REMOVE.out.bim).join(PLINK2_REMOVE.out.fam).map{
+        meta, bed, bim, fam -> [[id:'hwe_filter', prefix_in:'het_outliers_removed', prefix_out:'plink_hwe_filter'], bed, bim, fam]
+    }
+
+  
+    PLINK2_HWE_FILTER(plink_hwe_input_ch)
+   // PLINK2_HWE_FILTER.out.bed.view()
+
+    plink_prune_input_ch = PLINK2_HWE_FILTER.out.bed.join(PLINK2_HWE_FILTER.out.bim).join(PLINK2_HWE_FILTER.out.fam).map{
+        meta, bed, bim, fam -> [[id:'ld_prune', prefix_in:'plink_hwe_filter', prefix_out:'plink_ld_prune'], bed, bim, fam]
+    }
+
+    PLINK2_INDEP_PAIRWISE(plink_prune_input_ch, params.window_size, params.step, params.r_squared)
+    PLINK2_INDEP_PAIRWISE.out.prune_in.view()
 
 }

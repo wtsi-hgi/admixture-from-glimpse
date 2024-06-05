@@ -1,4 +1,4 @@
-process PLINK2_REMOVE {
+process PLINK2_INDEP_PAIRWISE {
     tag "$meta.id"
     label 'process_low'
 
@@ -9,12 +9,13 @@ process PLINK2_REMOVE {
 
     input:
     tuple val(meta), path(bed), path(bim), path(fam)
-    tuple val(meta2), path(sample_exclude_list)
+    val(win)
+    val(step)
+    val(r2)
 
     output:
-    tuple val(meta), path("*.bim")  , emit: bim, optional: true
-    tuple val(meta), path("*.bed")  , emit: bed, optional: true
-    tuple val(meta), path("*.fam")  , emit: fam, optional: true
+    tuple val(meta), path("*.prune.in")  , emit: prune_in
+    tuple val(meta), path("*.prune.out")  , emit: prunout
     path "versions.yml"                             , emit: versions
 
     script:
@@ -23,8 +24,8 @@ process PLINK2_REMOVE {
     plink2 \\
         --bfile ${meta.prefix_in} \\
         $args \\
+        --indep-pairwise $win $step $r2 \\
         --threads $task.cpus \\
-        --remove $sample_exclude_list \\
         --out ${meta.prefix_out}
 
     cat <<-END_VERSIONS > versions.yml
