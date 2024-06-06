@@ -12,6 +12,7 @@ include { IDENTIFY_HET_OUTLIERS } from '../modules/local/identify_het_outliers/m
 include { PLINK2_REMOVE } from '../modules/local/plink2/remove/main.nf'
 include { PLINK2_FILTER as PLINK2_HWE_FILTER } from '../modules/local/plink2/filter/main.nf'
 include { PLINK2_INDEP_PAIRWISE } from '../modules/local/plink2/indep_pairwise/main.nf'
+include { PLINK2_EXTRACT } from '../modules/local/plink2/extract/main.nf'
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     // step 1 - filter test data by minimum info score
@@ -82,6 +83,14 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     }
 
     PLINK2_INDEP_PAIRWISE(plink_prune_input_ch, params.window_size, params.step, params.r_squared)
-    PLINK2_INDEP_PAIRWISE.out.prune_in.view()
+    //PLINK2_INDEP_PAIRWISE.out.prune_in.view()
+
+    extract_input_ch = plink_prune_input_ch.join(PLINK2_INDEP_PAIRWISE.out.prune_in).map{ 
+        meta, bed, bim, fam, vars -> [ [id:'ld_prune_extract', prefix_in:'plink_hwe_filter', prefix_out:'plink_ld_pruned'], bed, bim, fam, vars]
+        }    
+    PLINK2_EXTRACT(extract_input_ch)
+    PLINK2_EXTRACT.out.bed.view()
+
+
 
 }
