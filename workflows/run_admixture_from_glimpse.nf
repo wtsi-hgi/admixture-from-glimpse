@@ -13,6 +13,7 @@ include { PLINK2_REMOVE } from '../modules/local/plink2/remove/main.nf'
 include { PLINK2_FILTER as PLINK2_HWE_FILTER } from '../modules/local/plink2/filter/main.nf'
 include { PLINK2_INDEP_PAIRWISE } from '../modules/local/plink2/indep_pairwise/main.nf'
 include { PLINK2_EXTRACT } from '../modules/local/plink2/extract/main.nf'
+include { PLINK_GENOME } from '../modules/local/plink/genome/main.nf'
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     // step 1 - filter test data by minimum info score
@@ -91,6 +92,11 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     PLINK2_EXTRACT(extract_input_ch)
     PLINK2_EXTRACT.out.bed.view()
 
+    plink_genome_input_ch = PLINK2_EXTRACT.out.bed.join(PLINK2_EXTRACT.out.bim).join(PLINK2_EXTRACT.out.fam).map{
+        meta, bed, bim, fam -> [[id:'ibd', prefix_in:'plink_ld_pruned', prefix_out:'plink_ld_pruned'], bed, bim, fam]
+    }
 
+    PLINK_GENOME(plink_genome_input_ch)
+    PLINK_GENOME.out.genome.view()
 
 }

@@ -1,0 +1,30 @@
+name: plink_genome
+description: Identity by descent
+keywords:
+  - plink
+input:
+  - meta:
+      type: map
+      description: sample information
+  - bed:
+      type: file
+      description: PLINK binary genotype table (bed)
+      pattern: "*.{bed}"
+  - bim:
+      type: file
+      description: PLINK extended MAP file
+      pattern: "*.{bim}"
+  - fam:
+      type: file
+      description: PLINK sample information file
+      pattern: "*.{fam}"
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - genome:
+      type: file
+      description: IBD report
+      pattern: "*.{genome}"
