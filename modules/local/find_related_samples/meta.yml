@@ -1,0 +1,22 @@
+name: find_related_samples
+description: Find related samples
+keywords:
+  - IBD
+input:
+  - meta:
+      type: map
+      description: sample information
+  - infile:
+      type: file
+      description: input het file from plink --genome
+output:
+  - meta:
+      type: map
+      description: sample information
+  - outfile:
+      type: file
+      description: file containing related samples
+      pattern: "related_samples.txt"
+authors:
+  - @RuthEberhardt
+
