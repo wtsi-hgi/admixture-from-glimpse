@@ -1,0 +1,63 @@
+name: plink2_extract
+description: Filter data to just input variant list in plink2
+keywords:
+  - plink2
+input:
+  - meta:
+      type: map
+      description: sample information
+  - bed:
+      type: file
+      description: PLINK 2 binary genotype table (bed)
+      pattern: "*.{bed}"
+  - bim:
+      type: file
+      description: PLINK extended MAP file
+      pattern: "*.{bim}"
+  - fam:
+      type: file
+      description: PLINK sample information file
+      pattern: "*.{fam}"
+  - variants:
+      type: file
+      description: File containing variants to include
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+   -  eigenval:
+      type: file
+      description: PCA Eigenvalues
+      pattern: "*.{eigenval}"
+   -  eigenvec:
+      type: file
+      description: PCA Eigenvectors
+      pattern: "*.{eigenval}"
+   -  fam:
+      type: file
+      description: PLINK sample information file
+      pattern: "*.{fam}"
+  -  bim:
+      type: file
+      description: PLINK extended map file
+      pattern: "*.{bim}"
+  -  bed:
+      type: file
+      description: PLINK binary allelic genotype table
+      pattern: "*.{bed}"
+  - pgen:
+      type: file
+      description: PLINK 2 binary genotype table
+      pattern: "*.{pgen}"
+  - psam:
+      type: file
+      description: PLINK 2 sample information file
+      pattern: "*.{psam}"
+  - pvar:
+      type: file
+      description: PLINK 2 variant information file
+      pattern: "*.{pvar.zst}"
+authors:
+  - @RuthEberhardt
