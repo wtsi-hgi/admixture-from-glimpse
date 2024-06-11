@@ -15,6 +15,7 @@ include { PLINK2_INDEP_PAIRWISE } from '../modules/local/plink2/indep_pairwise/m
 include { PLINK2_EXTRACT } from '../modules/local/plink2/extract/main.nf'
 include { PLINK_GENOME } from '../modules/local/plink/genome/main.nf'
 include { FIND_RELATED_SAMPLES } from '../modules/local/find_related_samples/main.nf'
+include { PLINK2_REMOVE as PLINK2_REMOVE_RELATED } from '../modules/local/plink2/remove/main.nf'
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     // step 1 - filter test data by minimum info score
@@ -100,6 +101,13 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     PLINK_GENOME(plink_genome_input_ch)
 
     FIND_RELATED_SAMPLES(PLINK_GENOME.out.genome)
-    FIND_RELATED_SAMPLES.out.related.view()
+    //FIND_RELATED_SAMPLES.out.related.view()
+
+    remove_related_input_ch = plink_genome_input_ch.map{
+        meta, bed, bim, fam -> [[id:'rm_related', prefix_in:'plink_ld_pruned', prefix_out:'plink_remove_related'], bed, bim, fam]
+    }
+    
+    PLINK2_REMOVE_RELATED(remove_related_input_ch, FIND_RELATED_SAMPLES.out.related)
+    PLINK2_REMOVE_RELATED.out.bed.view()
 
 }
