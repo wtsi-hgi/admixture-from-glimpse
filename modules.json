@@ -5,9 +5,9 @@
     "https://github.com/nf-core/modules.git": {
       "modules": {
         "nf-core": {
-          "bcftools/filter": {
+          "admixture": {
             "branch": "master",
-            "git_sha": "a3893076a76e91b3ff152faddf872f00778fb224",
+            "git_sha": "10cee81c18c203f22b19e0fe8076f2436b84ab0e",
             "installed_by": ["modules"]
           },
           "bcftools/index": {

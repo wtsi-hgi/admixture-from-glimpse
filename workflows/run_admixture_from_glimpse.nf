@@ -17,6 +17,7 @@ include { PLINK_GENOME } from '../modules/local/plink/genome/main.nf'
 include { FIND_RELATED_SAMPLES } from '../modules/local/find_related_samples/main.nf'
 include { PLINK2_REMOVE as PLINK2_REMOVE_RELATED } from '../modules/local/plink2/remove/main.nf'
 include { PLINK2_PCA } from '../modules/local/plink2/pca/main.nf'
+include { ADMIXTURE } from '../modules/nf-core/admixture/main.nf'
 
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
@@ -116,7 +117,23 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
         meta, bed, bim, fam -> [[id:'pca', prefix_in:'plink_remove_related', prefix_out:'plink_pca'], bed, bim, fam]
     }
     PLINK2_PCA(pca_input_ch)
-    PLINK2_PCA.out.bed.view()
+    //PLINK2_PCA.out.bed.view()
+
+    k_ch = channel.from(4..8)
+    //k_ch.view()
+
+    admix_input1_ch = PLINK2_PCA.out.bed.join(PLINK2_PCA.out.bim).join(PLINK2_PCA.out.fam).map{
+        meta, bed, bim, fam -> [[id:'admixture'], bed, bim, fam]
+    }
+    //admix_input1_ch.view()
+
+    admix_input_ch = admix_input1_ch.combine(k_ch.flatten()).map{
+        meta, bed, bim, fam, k -> [[id:"admixture_" + k], bed, bim, fam]
+    }
+    //admix_input_ch.view()
+
+    ADMIXTURE(admix_input_ch, k_ch)
+    ADMIXTURE.out.ancestry_fractions.view()
 
 
 }
