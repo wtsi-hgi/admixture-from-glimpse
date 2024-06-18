@@ -1,0 +1,25 @@
+name: annotate_q_file
+description: Annotoate admixture Q file with sample names and populations
+keywords:
+  - admixture
+input:
+  - meta:
+      type: map
+      description: sample information
+  - q_file:
+      type: file
+      description: Space-delimited files containing ancestry fractions. The output filenames have the number of populations (K) that was assumed for the analysis.
+  - fam:
+      type: file
+      description: PLINK sample information file
+  - pops_file:
+      type: file
+      description: population-sample mapping file
+output:
+  - meta:
+      type: map
+      description: sample information
+  - file:annotated Q file
+      pattern: "*Q.with_sample_and_pop"
+authors:
+  - @RuthEberhardt

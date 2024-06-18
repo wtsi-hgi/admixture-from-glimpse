@@ -18,6 +18,7 @@ include { FIND_RELATED_SAMPLES } from '../modules/local/find_related_samples/mai
 include { PLINK2_REMOVE as PLINK2_REMOVE_RELATED } from '../modules/local/plink2/remove/main.nf'
 include { PLINK2_PCA } from '../modules/local/plink2/pca/main.nf'
 include { ADMIXTURE } from '../modules/nf-core/admixture/main.nf'
+include { ANNOTATE_Q_FILE } from '../modules/local/annotate_q_file/main.nf'
 
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
@@ -133,7 +134,19 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     //admix_input_ch.view()
 
     ADMIXTURE(admix_input_ch, k_ch)
-    ADMIXTURE.out.ancestry_fractions.view()
+    //ADMIXTURE.out.ancestry_fractions.view()
+    pops_ch = channel.fromPath(params.pops_file)
 
+    annotate_inpout_ch = ADMIXTURE.out.ancestry_fractions.groupTuple(by: 0).combine(PLINK2_PCA.out.fam).combine(pops_ch).map{
+        meta, qfile, meta2, fam, pops -> [meta, qfile, fam, pops]
+    }
+    //.map{
+     //   meta, qfile, meta2, fam -> [meta, qfile, fam]
+    //}
+    // annotate_inpout_ch.view()
+    
+
+    ANNOTATE_Q_FILE(annotate_inpout_ch)
+    ANNOTATE_Q_FILE.out.annotated_q_file.view()
 
 }
