@@ -22,7 +22,7 @@ include { ANNOTATE_Q_FILE } from '../modules/local/annotate_q_file/main.nf'
 
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
-    // step 1 - filter test data by minimum info score
+
     vcf_ch = channel.fromPath(params.test_vcf)
     index_ch = channel.fromPath(params.test_vcf_index)
     bcftools_view_input_ch = vcf_ch.combine(index_ch).map{
@@ -83,20 +83,17 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
 
   
     PLINK2_HWE_FILTER(plink_hwe_input_ch)
-   // PLINK2_HWE_FILTER.out.bed.view()
 
     plink_prune_input_ch = PLINK2_HWE_FILTER.out.bed.join(PLINK2_HWE_FILTER.out.bim).join(PLINK2_HWE_FILTER.out.fam).map{
         meta, bed, bim, fam -> [[id:'ld_prune', prefix_in:'plink_hwe_filter', prefix_out:'plink_ld_prune'], bed, bim, fam]
     }
 
     PLINK2_INDEP_PAIRWISE(plink_prune_input_ch, params.window_size, params.step, params.r_squared)
-    //PLINK2_INDEP_PAIRWISE.out.prune_in.view()
 
     extract_input_ch = plink_prune_input_ch.join(PLINK2_INDEP_PAIRWISE.out.prune_in).map{ 
         meta, bed, bim, fam, vars -> [ [id:'ld_prune_extract', prefix_in:'plink_hwe_filter', prefix_out:'plink_ld_pruned'], bed, bim, fam, vars]
         }    
     PLINK2_EXTRACT(extract_input_ch)
-    //PLINK2_EXTRACT.out.bed.view()
 
     plink_genome_input_ch = PLINK2_EXTRACT.out.bed.join(PLINK2_EXTRACT.out.bim).join(PLINK2_EXTRACT.out.fam).map{
         meta, bed, bim, fam -> [[id:'ibd', prefix_in:'plink_ld_pruned', prefix_out:'plink_ld_pruned'], bed, bim, fam]
@@ -105,48 +102,36 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     PLINK_GENOME(plink_genome_input_ch)
 
     FIND_RELATED_SAMPLES(PLINK_GENOME.out.genome)
-    //FIND_RELATED_SAMPLES.out.related.view()
 
     remove_related_input_ch = plink_genome_input_ch.map{
         meta, bed, bim, fam -> [[id:'rm_related', prefix_in:'plink_ld_pruned', prefix_out:'plink_remove_related'], bed, bim, fam]
     }
     
     PLINK2_REMOVE_RELATED(remove_related_input_ch, FIND_RELATED_SAMPLES.out.related)
-    //PLINK2_REMOVE_RELATED.out.bed.view()
 
     pca_input_ch = PLINK2_REMOVE_RELATED.out.bed.join(PLINK2_REMOVE_RELATED.out.bim).join(PLINK2_REMOVE_RELATED.out.fam).map{
         meta, bed, bim, fam -> [[id:'pca', prefix_in:'plink_remove_related', prefix_out:'plink_pca'], bed, bim, fam]
     }
     PLINK2_PCA(pca_input_ch)
-    //PLINK2_PCA.out.bed.view()
 
     k_ch = channel.from(4..8)
-    //k_ch.view()
 
     admix_input1_ch = PLINK2_PCA.out.bed.join(PLINK2_PCA.out.bim).join(PLINK2_PCA.out.fam).map{
         meta, bed, bim, fam -> [[id:'admixture'], bed, bim, fam]
     }
-    //admix_input1_ch.view()
 
     admix_input_ch = admix_input1_ch.combine(k_ch.flatten()).map{
         meta, bed, bim, fam, k -> [[id:"admixture_" + k], bed, bim, fam]
     }
-    //admix_input_ch.view()
 
     ADMIXTURE(admix_input_ch, k_ch)
-    //ADMIXTURE.out.ancestry_fractions.view()
+
     pops_ch = channel.fromPath(params.pops_file)
 
     annotate_inpout_ch = ADMIXTURE.out.ancestry_fractions.groupTuple(by: 0).combine(PLINK2_PCA.out.fam).combine(pops_ch).map{
         meta, qfile, meta2, fam, pops -> [meta, qfile, fam, pops]
     }
-    //.map{
-     //   meta, qfile, meta2, fam -> [meta, qfile, fam]
-    //}
-    // annotate_inpout_ch.view()
-    
 
     ANNOTATE_Q_FILE(annotate_inpout_ch)
-    ANNOTATE_Q_FILE.out.annotated_q_file.view()
 
 }
