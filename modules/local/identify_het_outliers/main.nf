@@ -1,6 +1,10 @@
 process IDENTIFY_HET_OUTLIERS {
     label 'process_low'
 
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+      'https://depot.galaxyproject.org/singularity/pandas:2.2.1':
+      'biocontainers/pandas:2.2.1' }"
+
     input:
     tuple val(meta), path(infile)
 
