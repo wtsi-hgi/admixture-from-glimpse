@@ -23,25 +23,39 @@ include { ANNOTATE_Q_FILE } from '../modules/local/annotate_q_file/main.nf'
 
 workflow RUN_ADMIXTURE_FROM_GLIMPSE {
 
-    vcf_ch = channel.fromPath(params.test_vcf)
-    index_ch = channel.fromPath(params.test_vcf_index)
-    bcftools_view_input_ch = vcf_ch.combine(index_ch).map{
-                                                            vcf, index -> 
-                                                            [[id: 'glimpse_filter_info'], vcf, index]
-                                                            }
+    if (params.filter_input) {
+    
+        vcf_ch = channel.fromPath(params.test_vcf)
+        index_ch = channel.fromPath(params.test_vcf_index)
+        bcftools_view_input_ch = vcf_ch.combine(index_ch).map{
+                                                                vcf, index -> 
+                                                                [[id: 'glimpse_filter_info'], vcf, index]
+                                                                }
+    
+        BCFTOOLS_VIEW ( bcftools_view_input_ch, [], [], [] )
+    
+        INDEX_FILTER ( BCFTOOLS_VIEW.out.vcf )
+    
+        filtered_output_ch = BCFTOOLS_VIEW.out.vcf
+        index_filtered_output_ch = INDEX_FILTER.out.csi
+        pops_vcf_ch = channel.fromPath(params.pops_vcf)
+        pops_index_ch = channel.fromPath(params.pops_vcf_index)
+    
+        vcf_ch = filtered_output_ch.merge(pops_vcf_ch).map{meta, a, b -> [meta, [a, b]]}
+        index_ch = index_filtered_output_ch.merge(pops_index_ch).map{meta, a, b -> [meta, [a, b]]}
 
-    BCFTOOLS_VIEW ( bcftools_view_input_ch, [], [], [] )
-
-    INDEX_FILTER ( BCFTOOLS_VIEW.out.vcf )
-
-    filtered_output_ch = BCFTOOLS_VIEW.out.vcf
-    index_filtered_output_ch = INDEX_FILTER.out.csi
-    pops_vcf_ch = channel.fromPath(params.pops_vcf)
-    pops_index_ch = channel.fromPath(params.pops_vcf_index)
-
-    vcf_ch = filtered_output_ch.merge(pops_vcf_ch).map{meta, a, b -> [meta, [a, b]]}
-    index_ch = index_filtered_output_ch.merge(pops_index_ch).map{meta, a, b -> [meta, [a, b]]}
-
+    } else {
+    
+        input_vcf_ch = channel.fromPath(params.test_vcf)
+        input_index_ch = channel.fromPath(params.test_vcf_index)
+        pops_vcf_ch = channel.fromPath(params.pops_vcf)
+        pops_index_ch = channel.fromPath(params.pops_vcf_index)
+        
+        vcf_ch = input_vcf_ch.merge(pops_vcf_ch).map{a, b -> [[id: 'glimpse_unfiltered'], [a, b]]}
+        index_ch = input_index_ch.merge(pops_index_ch).map{a, b -> [[id: 'glimpse_unfiltered'], [a, b]]}
+    
+    }
+  
     isec_input_ch = vcf_ch.join(index_ch)
 
     BCFTOOLS_ISEC( isec_input_ch )
