@@ -18,6 +18,7 @@ include { FIND_RELATED_SAMPLES } from '../modules/local/find_related_samples/mai
 include { PLINK2_REMOVE as PLINK2_REMOVE_RELATED } from '../modules/local/plink2/remove/main.nf'
 include { PLINK2_PCA } from '../modules/local/plink2/pca/main.nf'
 include { ADMIXTURE } from '../modules/nf-core/admixture/main.nf'
+include { MERGE_TXT } from '../modules/local/merge_txt/main.nf'
 include { ANNOTATE_Q_FILE } from '../modules/local/annotate_q_file/main.nf'
 
 
@@ -128,7 +129,7 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     }
     PLINK2_PCA(pca_input_ch)
 
-    k_ch = channel.from(4..8)
+    k_ch = channel.from(5..13)
 
     admix_input1_ch = PLINK2_PCA.out.bed.join(PLINK2_PCA.out.bim).join(PLINK2_PCA.out.fam).map{
         meta, bed, bim, fam -> [[id:'admixture'], bed, bim, fam]
@@ -145,6 +146,12 @@ workflow RUN_ADMIXTURE_FROM_GLIMPSE {
     annotate_inpout_ch = ADMIXTURE.out.ancestry_fractions.groupTuple(by: 0).combine(PLINK2_PCA.out.fam).combine(pops_ch).map{
         meta, qfile, meta2, fam, pops -> [meta, qfile, fam, pops]
     }
+    
+    cv_txt_ch = ADMIXTURE.out.cross_validation.collect() 
+    cv_txt_ch.view()
+    publish_ch = channel.fromPath(params.publishdir)
+    
+    MERGE_TXT(cv_txt_ch)
 
     ANNOTATE_Q_FILE(annotate_inpout_ch)
 

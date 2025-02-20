@@ -16,6 +16,7 @@ process ADMIXTURE {
     tuple val(meta), path("*.Q")    , emit: ancestry_fractions
     tuple val(meta), path("*.P")    , emit: allele_frequencies
     path "versions.yml"             , emit: versions
+    path "cv_${K}.txt"                   , emit: cross_validation
 
     when:
     task.ext.when == null || task.ext.when
@@ -29,6 +30,8 @@ process ADMIXTURE {
         $K \\
         -j$task.cpus \\
         $args
+
+    grep -h CV .command.out > cv_${K}.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
