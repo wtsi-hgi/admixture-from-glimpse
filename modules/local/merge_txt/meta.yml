@@ -1,0 +1,11 @@
+name: merge_txt
+description: Merge txt files containing the cross validation error values from the different values of K
+input:
+  - file:individual cv error values from each value of K
+      pattern: "{params.publishdir}/txt_files/*.txt"
+
+output:
+  - file:merged cv error values 
+      pattern: "merged_cv.txt"
+authors:
+  - @JoDennehy
