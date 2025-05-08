@@ -19,3 +19,21 @@ process ANNOTATE_Q_FILE {
     """
 
 }
+
+process ANNOTATE_SUPERVISED_Q_FILE {
+    label 'process_low'
+
+    publishDir "${params.publishdir}", mode: 'copy', pattern: "*Q.with_sample_and_pop"
+
+    input:
+    tuple val(meta), path(q_file), path(pop_file), path(fam_file)
+
+    output:
+    tuple val(meta), path("*Q.with_sample_and_pop"), emit: annotated_q_file
+
+    script:
+    """
+    annotates_supervised_q_file.py $q_file $fam_file $pop_file
+    """
+
+}
